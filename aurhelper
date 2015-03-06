@@ -1,0 +1,28 @@
+#!/usr/bin/env zsh
+
+dir=~/.aurhelper
+pkgurl=https://aur.archlinux.org/packages/
+
+[ -e $dir ] || mkdir $dir
+pushd $dir
+
+for pkg in $@ ; do
+	echo "Installing $pkg..."
+	pkgpfx=$(echo "$pkg" | head -c2)  
+	if [[ -e ${pkg}.tar.gz ]] || wget $pkgurl/$pkgpfx/$pkg/${pkg}.tar.gz ; then
+		if tar -xzf ${pkg}.tar.gz ; then
+			if pushd $pkg ; then
+				if makepkg -s -i ; then
+					echo "########## Installed $pkg #############"
+				else
+					echo "########## Installation of $pkg failed"
+				fi
+				popd 
+			fi
+		fi
+	fi
+	echo
+done
+
+popd
+
